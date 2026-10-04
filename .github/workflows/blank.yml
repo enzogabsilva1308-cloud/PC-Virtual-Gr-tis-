@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PC Virtual Web</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:Arial,sans-serif;
+  overflow:hidden;
+  background:#101827;
+  color:#fff;
+}
+
+#desktop{
+  width:100vw;
+  height:100vh;
+  position:relative;
+  background:
+    radial-gradient(circle at 20% 20%,#2455a4 0,#101827 35%),
+    linear-gradient(135deg,#101827,#050914);
+}
+
+/* ÍCONES */
+.icons{
+  position:absolute;
+  top:20px;
+  left:20px;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+.icon{
+  width:75px;
+  text-align:center;
+  cursor:pointer;
+  padding:8px;
+  border-radius:8px;
+  user-select:none;
+}
+
+.icon:hover{background:#ffffff20}
+
+.icon .emoji{
+  font-size:38px;
+  display:block;
+  margin-bottom:5px;
+}
+
+.icon span:last-child{
+  font-size:12px;
+  text-shadow:0 2px 4px #000;
+}
+
+/* JANELAS */
+.window{
+  position:absolute;
+  width:650px;
+  height:430px;
+  min-width:300px;
+  min-height:220px;
+  background:#111827ee;
+  border:1px solid #ffffff25;
+  border-radius:12px;
+  box-shadow:0 20px 60px #0009;
+  overflow:hidden;
+  backdrop-filter:blur(18px);
+}
+
+.titlebar{
+  height:42px;
+  background:#182235ee;
+  display:flex;
+  align-items:center;
+  padding:0 12px;
+  cursor:move;
+  user-select:none;
+}
+
+.title{
+  flex:1;
+  font-size:14px;
+}
+
+.controls button{
+  border:0;
+  background:transparent;
+  color:white;
+  width:32px;
+  height:30px;
+  cursor:pointer;
+  border-radius:6px;
+}
+
+.controls button:hover{background:#ffffff20}
+
+.content{
+  height:calc(100% - 42px);
+  overflow:auto;
+}
+
+/* TERMINAL */
+.terminal{
+  height:100%;
+  background:#050505;
+  padding:15px;
+  font-family:monospace;
+  color:#00ff88;
+}
+
+.terminal-output{
+  white-space:pre-wrap;
+  margin-bottom:10px;
+}
+
+.term-line{
+  display:flex;
+}
+
+.term-line span{color:#00ff88}
+
+.term-input{
+  flex:1;
+  background:none;
+  border:0;
+  outline:0;
+  color:#fff;
+  font-family:monospace;
+}
+
+/* EXPLORADOR */
+.explorer{
+  padding:20px;
+}
+
+.file-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,100px);
+  gap:20px;
+}
+
+.file{
+  padding:15px 5px;
+  text-align:center;
+  cursor:pointer;
+  border-radius:8px;
+}
+
+.file:hover{background:#ffffff15}
+
+.file div{font-size:38px;margin-bottom:7px}
+.file small{font-size:12px}
+
+/* CONFIGURAÇÕES */
+.settings{
+  padding:25px;
+}
+
+.setting{
+  background:#ffffff0d;
+  padding:18px;
+  border-radius:10px;
+  margin-bottom:12px;
+}
+
+.setting button{
+  margin-top:10px;
+  padding:8px 15px;
+  border:0;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+/* TASKBAR */
+#taskbar{
+  position:absolute;
+  bottom:0;
+  left:0;
+  width:100%;
+  height:55px;
+  background:#101827dd;
+  border-top:1px solid #ffffff18;
+  backdrop-filter:blur(18px);
+  display:flex;
+  align-items:center;
+  padding:5px 10px;
+  gap:8px;
+  z-index:9999;
+}
+
+.task-btn{
+  height:43px;
+  min-width:45px;
+  border:0;
+  border-radius:8px;
+  background:transparent;
+  color:#fff;
+  cursor:pointer;
+  font-size:20px;
+}
+
+.task-btn:hover{background:#ffffff15}
+
+#clock{
+  margin-left:auto;
+  text-align:right;
+  padding:0 8px;
+  font-size:12px;
+}
+
+/* START */
+#startMenu{
+  position:absolute;
+  bottom:65px;
+  left:10px;
+  width:350px;
+  background:#111827ee;
+  border:1px solid #ffffff20;
+  border-radius:15px;
+  padding:18px;
+  box-shadow:0 20px 60px #0008;
+  backdrop-filter:blur(20px);
+  display:none;
+  z-index:10000;
+}
+
+#startMenu h2{
+  margin-bottom:15px;
+}
+
+.apps{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+
+.app{
+  padding:15px 5px;
+  border-radius:10px;
+  text-align:center;
+  cursor:pointer;
+}
+
+.app:hover{background:#ffffff15}
+
+.app div{font-size:30px;margin-bottom:5px}
+.app small{font-size:11px}
+
+/* NOTIFICAÇÃO */
+#notification{
+  position:absolute;
+  right:20px;
+  bottom:75px;
+  background:#182235;
+  padding:15px 20px;
+  border-radius:10px;
+  box-shadow:0 10px 30px #0008;
+  display:none;
+  z-index:20000;
+}
+
+/* MOBILE */
+@media(max-width:700px){
+  .window{
+    width:calc(100vw - 20px);
+    height:calc(100vh - 90px);
+    left:10px!important;
+    top:10px!important;
+  }
+
+  #startMenu{
+    width:calc(100vw - 20px);
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div id="desktop">
+
+  <div class="icons">
+
+    <div class="icon" onclick="openExplorer()">
+      <span class="emoji">📁</span>
+      <span>Arquivos</span>
+    </div>
+
+    <div class="icon" onclick="openTerminal()">
+      <span class="emoji">💻</span>
+      <span>Terminal</span>
+    </div>
+
+    <div class="icon" onclick="openSettings()">
+      <span class="emoji">⚙️</span>
+      <span>Configurações</span>
+    </div>
+
+  </div>
+
+  <div id="windows"></div>
+
+  <div id="startMenu">
+    <h2>🚀 PC Virtual</h2>
+
+    <div class="apps">
+
+      <div class="app" onclick="openExplorer()">
+        <div>📁</div>
+        <small>Arquivos</small>
+      </div>
+
+      <div class="app" onclick="openTerminal()">
+        <div>💻</div>
+        <small>Terminal</small>
+      </div>
+
+      <div class="app" onclick="openSettings()">
+        <div>⚙️</div>
+        <small>Configurações</small>
+      </div>
+
+      <div class="app" onclick="about()">
+        <div>ℹ️</div>
+        <small>Sobre</small>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="notification"></div>
+
+  <div id="taskbar">
+
+    <button class="task-btn" onclick="toggleStart()">⊞</button>
+
+    <button class="task-btn" onclick="openExplorer()">📁</button>
+
+    <button class="task-btn" onclick="openTerminal()">💻</button>
+
+    <button class="task-btn" onclick="openSettings()">⚙️</button>
+
+    <div id="clock"></div>
+
+  </div>
+
+</div>
+
+<script>
+
+let zIndex = 10;
+
+/* RELÓGIO */
+function updateClock(){
+
+  const now = new Date();
+
+  const time = now.toLocaleTimeString("pt-BR",{
+    hour:"2-digit",
+    minute:"2-digit"
+  });
+
+  const date = now.toLocaleDateString("pt-BR");
+
+  document.getElementById("clock").innerHTML =
+    `${time}<br>${date}`;
+}
+
+setInterval(updateClock,1000);
+updateClock();
+
+/* START */
+function toggleStart(){
+
+  const menu=document.getElementById("startMenu");
+
+  menu.style.display =
+    menu.style.display==="block" ? "none":"block";
+}
+
+/* JANELA */
+function createWindow(title,html){
+
+  const win=document.createElement("div");
+
+  win.className="window";
+
+  win.style.left=(100+Math.random()*150)+"px";
+  win.style.top=(50+Math.random()*100)+"px";
+
+  win.style.zIndex=++zIndex;
+
+  win.innerHTML=`
+
+    <div class="titlebar">
+
+      <div class="title">${title}</div>
+
+      <div class="controls">
+
+        <button onclick="minimizeWindow(this)">—</button>
+
+        <button onclick="maximizeWindow(this)">□</button>
+
+        <button onclick="this.closest('.window').remove()">✕</button>
+
+      </div>
+
+    </div>
+
+    <div class="content">
+      ${html}
+    </div>
+
+  `;
+
+  document.getElementById("windows").appendChild(win);
+
+  makeDraggable(win);
+
+  win.addEventListener("mousedown",()=>{
+    win.style.zIndex=++zIndex;
+  });
+
+  return win;
+}
+
+/* ARQUIVOS */
+function openExplorer(){
+
+  document.getElementById("startMenu").style.display="none";
+
+  createWindow("📁 Explorador de Arquivos",`
+
+    <div class="explorer">
+
+      <h2>Este Computador</h2>
+
+      <br>
+
+      <div class="file-grid">
+
+        <div class="file">
+          <div>💾</div>
+          <small>Disco Local</small>
+        </div>
+
+        <div class="file">
+          <div>📄</div>
+          <small>Documentos</small>
+        </div>
+
+        <div class="file">
+          <div>🖼️</div>
+          <small>Imagens</small>
+        </div>
+
+        <div class="file">
+          <div>🎵</div>
+          <small>Músicas</small>
+        </div>
+
+        <div class="file">
+          <div>🎮</div>
+          <small>Jogos</small>
+        </div>
+
+        <div class="file">
+          <div>⬇️</div>
+          <small>Downloads</small>
+        </div>
+
+      </div>
+
+    </div>
+
+  `);
+}
+
+/* TERMINAL */
+function openTerminal(){
+
+  document.getElementById("startMenu").style.display="none";
+
+  const win=createWindow("💻 Terminal",`
+
+    <div class="terminal">
+
+      <div class="terminal-output">
+PC Virtual Terminal<br>
+Digite "help" para ver os comandos.
+      </div>
+
+      <div class="term-line">
+
+        <span>user@pc:~$ </span>
+
+        <input class="term-input" autofocus>
+
+      </div>
+
+    </div>
+
+  `);
+
+  const input=win.querySelector(".term-input");
+  const output=win.querySelector(".terminal-output");
+
+  input.addEventListener("keydown",e=>{
+
+    if(e.key!=="Enter") return;
+
+    const command=input.value.trim();
+
+    output.innerHTML+=
+      `<br>user@pc:~$ ${escapeHtml(command)}`;
+
+    if(command==="help"){
+
+      output.innerHTML+=`
+<br><br>Comandos disponíveis:
+<br>help
+<br>clear
+<br>date
+<br>time
+<br>about
+<br>echo [texto]
+`;
+
+    }else if(command==="clear"){
+
+      output.innerHTML="";
+
+    }else if(command==="date"){
+
+      output.innerHTML+=
+        "<br>"+new Date().toLocaleDateString("pt-BR");
+
+    }else if(command==="time"){
+
+      output.innerHTML+=
+        "<br>"+new Date().toLocaleTimeString("pt-BR");
+
+    }else if(command==="about"){
+
+      output.innerHTML+=
+        "<br>PC Virtual Web — interface experimental.";
+
+    }else if(command.startsWith("echo ")){
+
+      output.innerHTML+=
+        "<br>"+escapeHtml(command.substring(5));
+
+    }else if(command!==""){
+
+      output.innerHTML+=
+        "<br>Comando não encontrado.";
+
+    }
+
+    input.value="";
+
+  });
+
+}
+
+/* CONFIGURAÇÕES */
+function openSettings(){
+
+  document.getElementById("startMenu").style.display="none";
+
+  createWindow("⚙️ Configurações",`
+
+    <div class="settings">
+
+      <h2>Configurações</h2>
+
+      <br>
+
+      <div class="setting">
+
+        <b>🖥️ Aparência</b>
+
+        <p>Alterar o estilo do desktop.</p>
+
+        <button onclick="changeTheme()">
+          Alterar tema
+        </button>
+
+      </div>
+
+      <div class="setting">
+
+        <b>🔔 Notificações</b>
+
+        <p>Testar uma notificação.</p>
+
+        <button onclick="notify('Tudo funcionando!')">
+          Testar
+        </button>
+
+      </div>
+
+      <div class="setting">
+
+        <b>ℹ️ Sistema</b>
+
+        <p>PC Virtual Web v1.0</p>
+
+      </div>
+
+    </div>
+
+  `);
+}
+
+/* SOBRE */
+function about(){
+
+  document.getElementById("startMenu").style.display="none";
+
+  createWindow("ℹ️ Sobre",`
+
+    <div style="padding:25px">
+
+      <h1>PC Virtual Web</h1>
+
+      <br>
+
+      <p>
+        Uma interface de computador criada
+        inteiramente com HTML, CSS e JavaScript.
+      </p>
+
+      <br>
+
+      <p>Versão: 1.0</p>
+
+    </div>
+
+  `);
+}
+
+/* ARRASTAR */
+function makeDraggable(win){
+
+  const bar=win.querySelector(".titlebar");
+
+  let dragging=false;
+  let offsetX=0;
+  let offsetY=0;
+
+  bar.addEventListener("mousedown",e=>{
+
+    if(e.target.tagName==="BUTTON") return;
+
+    dragging=true;
+
+    offsetX=e.clientX-win.offsetLeft;
+    offsetY=e.clientY-win.offsetTop;
+
+  });
+
+  document.addEventListener("mousemove",e=>{
+
+    if(!dragging)return;
+
+    win.style.left=(e.clientX-offsetX)+"px";
+    win.style.top=(e.clientY-offsetY)+"px";
+
+  });
+
+  document.addEventListener("mouseup",()=>{
+    dragging=false;
+  });
+
+}
+
+/* MINIMIZAR */
+function minimizeWindow(button){
+
+  const win=button.closest(".window");
+
+  win.style.display="none";
+
+  setTimeout(()=>{
+    win.style.display="block";
+  },100);
+
+}
+
+/* MAXIMIZAR */
+function maximizeWindow(button){
+
+  const win=button.closest(".window");
+
+  if(win.dataset.maximized==="true"){
+
+    win.style.width="650px";
+    win.style.height="430px";
+    win.style.left="100px";
+    win.style.top="70px";
+
+    win.dataset.maximized="false";
+
+  }else{
+
+    win.style.left="0";
+    win.style.top="0";
+    win.style.width="100vw";
+    win.style.height="calc(100vh - 55px)";
+
+    win.dataset.maximized="true";
+
+  }
+
+}
+
+/* NOTIFICAÇÃO */
+function notify(message){
+
+  const n=document.getElementById("notification");
+
+  n.textContent=message;
+  n.style.display="block";
+
+  setTimeout(()=>{
+    n.style.display="none";
+  },3000);
+
+}
+
+/* TEMA */
+function changeTheme(){
+
+  document.getElementById("desktop").style.background =
+    "linear-gradient(135deg,#28104f,#080b18)";
+
+  notify("Tema alterado!");
+
+}
+
+/* SEGURANÇA DO TERMINAL */
+function escapeHtml(text){
+
+  return text
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+
+}
+
+</script>
+
+</body>
+</html>
